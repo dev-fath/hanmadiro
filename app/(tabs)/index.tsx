@@ -6,11 +6,8 @@ import { HelloWorld } from "@/components/SkiaText";
 export default function HomeScreen() {
   const {width,height} = useWindowDimensions();
 
-
   return (
     <ThemedView style={styles.content} >
-      <ThemedView style={styles.titleContainer}>
-      </ThemedView>
       <View style={{flex:1, width: width, justifyContent: 'center', alignItems: 'center', height: height}}>
         <HelloWorld />
       </View>
@@ -26,7 +23,7 @@ const styles = StyleSheet.create({
 
   content: {
     flex: 1,
-    padding: 32,
+    paddingHorizontal: 32,
     gap: 16,
     justifyContent: 'center',
     alignItems: 'center',

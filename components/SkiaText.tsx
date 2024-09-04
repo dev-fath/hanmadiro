@@ -1,27 +1,36 @@
 import {
   Canvas,
   Skia,
-  Fill,
   useFonts,
-  Paragraph, TextAlign,
+  Paragraph, TextAlign, LinearGradient, vec, Rect,
 } from "@shopify/react-native-skia";
-import { useEffect, useMemo, useState } from "react";
-import { useWindowDimensions } from "react-native";
+import React, { Fragment, useEffect, useMemo, useState } from "react";
+import { Pressable, useWindowDimensions, View } from "react-native";
 import { HelloWave } from "@/components/HelloWave";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 const size = 256;
 const path = Skia.Path.Make();
 path.addCircle(size, size, size/2);
 
-const fullText = '대한민국의... 아저씨..는.. 이런..,글씨체,,를, 좋아한다,,.';
-const welcomeText = 'Say Hello to Skia 🎨'
+const fullText = '대한민국의... 아저씨..는.. 이런..,글씨체,,를, 좋아한다,,.근데... 더,, 길어지면..,. 어떻게 하나..!';
+const welcomeText = '\n\n\nSay Hello to Skia 🎨'
 
 export const HelloWorld = () => {
   const {width,height} = useWindowDimensions();
   const [currentText, setCurrentText] = useState("");
-  const [currentWelcomeText, setCurrentWelcomeText] = useState("");
   const [allTextRendered, setAllTextRendered] = useState(false);
   const [showHelloWave, setShowHelloWave] = useState(false);
+
+  const [skiaKey, setSkiaKey] = useState(0);
+
+  const onClickRefresh = () => {
+    setSkiaKey(prevState => prevState + 1);
+    setCurrentText("")
+    setAllTextRendered(false)
+    setShowHelloWave(false)
+  }
+
 
 
   const customFontMgr = useFonts({
@@ -50,23 +59,10 @@ export const HelloWorld = () => {
     return Skia.ParagraphBuilder.Make(paragraphStyle, customFontMgr)
       .pushStyle(textStyle)
       .addText(currentText)
+      .pushStyle({ ...textStyle, fontStyle: { weight: 500 }, color: Skia.Color("blue") })
       .pop()
       .build();
   }, [currentText, customFontMgr]);
-
-  const paragraph2 = useMemo(() => {
-    // Are the font loaded already?
-    if (!customFontMgr) {
-      return null;
-    }
-
-    return Skia.ParagraphBuilder.Make(paragraphStyle, customFontMgr)
-      .pushStyle(textStyle)
-      .pushStyle({ ...textStyle, fontStyle: { weight: 500 }, color: Skia.Color("blue") })
-      .addText(currentWelcomeText)
-      .pop()
-      .build();
-  }, [currentWelcomeText, customFontMgr]);
 
   useEffect(() => {
     let index = 0;
@@ -86,17 +82,16 @@ export const HelloWorld = () => {
     }, 100); // 100ms 간격으로 한 글자씩 추가
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [skiaKey]);
 
 
 
   useEffect(() => {
     if(allTextRendered){
       let index = 0;
-      setCurrentWelcomeText('');
       const intervalId = setInterval(() => {
-        if (index < welcomeText.length) {
-          setCurrentWelcomeText((prev) => prev + welcomeText[index]);
+        if (index < (welcomeText.length)) {
+          setCurrentText((prev) => prev + welcomeText[index]);
           index++;
         } else {
           clearInterval(intervalId);
@@ -109,19 +104,36 @@ export const HelloWorld = () => {
     }
   }, [allTextRendered]);
 
+  const gradientColors = ["#ffecdb", "#ffccc3"]; // 시작과 끝 컬러
+  const start = vec(0, 0); // 그라데이션 시작점 (좌상단)
+  const end = vec(width, height); // 그라데이션 끝점 (우하단)
+
+
   return (
-    <>
-      <Canvas style={{ flex: 1, justifyContent: 'center', alignItems: 'center', width: width, height: height }}>
-        <Fill color="white" />
-        <Paragraph paragraph={paragraph} width={width-48} x={24} y={height/5} />
-        {
-          allTextRendered &&
-          <Paragraph paragraph={paragraph2} width={width} x={10} y={height*2/3} />
-        }
-      </Canvas>
-      {
-        showHelloWave && <HelloWave />
+    <Fragment key={skiaKey}>
+      {showHelloWave &&
+        <View style={{ position: 'absolute', top: 50, justifyContent: 'center', alignItems: 'center', zIndex: 100}}>
+          <Pressable onPress={onClickRefresh} style={{backgroundColor: '#eee', borderRadius: 9999, width: 50, height: 50, justifyContent: 'center', alignItems: 'center'}}>
+            <Ionicons size={28} name={'refresh-sharp'} />
+          </Pressable>
+        </View>
       }
-    </>
+        <Canvas style={{flex:1, width: width, height: height}}>
+          <Rect x={0} y={0} width={width} height={height}>
+            <LinearGradient
+              start={start}
+              end={end}
+              colors={gradientColors}
+            />
+          </Rect>
+          <Paragraph paragraph={paragraph} width={width-48} x={24} y={height/5} />
+          {/*<Fill />*/}
+        </Canvas>
+      <View style={{position: 'absolute', zIndex: 100, bottom: 50, justifyContent: 'center', alignItems: 'center'}}>
+        {
+          showHelloWave && <HelloWave />
+        }
+      </View>
+    </Fragment>
   );
 };
