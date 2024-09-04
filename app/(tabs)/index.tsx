@@ -1,22 +1,19 @@
-import { Image, StyleSheet, Platform, View } from 'react-native';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { HelloWorld } from "@/components/SkiaText";
 
 export default function HomeScreen() {
+  const {width,height} = useWindowDimensions();
+
+
   return (
     <ThemedView style={styles.content} >
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
       </ThemedView>
-    <ThemedText type="subtitle">오늘의 한마디</ThemedText>
-      <HelloWorld />
-      <HelloWave />
-
+      <View style={{flex:1, width: width, justifyContent: 'center', alignItems: 'center', height: height}}>
+        <HelloWorld />
+      </View>
     </ThemedView>
   );
 }
